@@ -1,0 +1,116 @@
+# Site settings
+title: Frank Blog
+SEOTitle: Frank Liu's blog| BY Frank
+header-img: img/post-bg-desk.jpg
+email: frankliu624@gmail.com
+description: "读码上万行，下键如有神。"
+keyword: "Ubuntu, CentOS, openSource, FLHonker, 刘宇昂, Qt, C++, Cloud"
+url: "https://FLHonker.github.io"          # your host, for absolute URL
+baseurl: ""      # for example, '/blog' if your blog hosted on 'host/blog'
+github_repo: "https://github.com/FLHonker/FLHonker.github.io.git" # you code repository
+
+# Sidebar settings
+sidebar: true                           # whether or not using Sidebar.
+sidebar-about-description: "Standing on the Shoulder of Giants."
+sidebar-avatar: /img/fuckyou.jpg      # use absolute URL, seeing it's used in both `/` and `/about/`
+
+
+
+# SNS settings
+RSS: false
+weibo_username:     西方以西的昂昂溪
+zhihu_username:     Kernel
+github_username:    FLHonker
+facebook_username:  frankliu
+jianshu_username:   KernelF
+twitter_username:   frankliu
+
+
+
+
+# Build settings
+# from 2016, 'pygments' is unsupported on GitHub Pages. Use 'rouge' for highlighting instead.
+permalink: pretty
+paginate: 10
+exclude: ["less","node_modules","Gruntfile.js","package.json","README.md"]
+anchorjs: true                          # if you want to customize anchor. check out line:181 of `post.html`
+
+
+
+# Gems
+# from PR#40, to support local preview for Jekyll 3.0
+gems: [jekyll-paginate]
+
+
+
+
+# Markdown settings
+# replace redcarpet to kramdown,
+# although redcarpet can auto highlight code, the lack of header-id make the catalog impossible, so I switch to kramdown
+# document: http://jekyllrb.com/docs/configuration/#kramdown
+markdown: kramdown
+highlighter: rouge
+kramdown:
+    input: GFM                            # use Github Flavored Markdown !important
+
+
+
+# 评论系统
+# Disqus（https://disqus.com/）
+disqus_username: FLHonker
+
+# Gitalk
+gitalk:
+  enable: true    #是否开启Gitalk评论
+  clientID: 52a84d1753eddc018509                            #生成的clientID
+  clientSecret: d981f4470947f2a5bc1a4b9bf2cbdcfaa17b70a9    #生成的clientSecret
+  repo: flhonker.github.io    #仓库名称
+  owner: FLHonker    #github用户名
+  admin: FLHonker
+  distractionFreeMode: true #是否启用类似FB的阴影遮罩
+
+
+# 统计
+
+# Analytics settings
+# Baidu Analytics
+#ba_track_id: b50bf2b12b5338a1845e33832976fd68
+
+# Google Analytics
+#ga_track_id: 'UA-90855596-1'            # Format: UA-xxxxxx-xx
+#ga_domain: auto                         # 默认的是 auto, 这里我是自定义了的域名，你如果没有自己的域名，需要改成auto
+
+
+
+
+
+# Featured Tags
+featured-tags: true                     # 是否使用首页标签
+featured-condition-size: 1              # 相同标签数量大于这个数，才会出现在首页
+
+
+
+# Progressive Web Apps
+chrome-tab-theme-color: "#000000"
+service-worker: true
+
+
+
+# Friends
+friends: [
+    {
+        title: "AliCloud",
+        href: "https://cn.aliyun.com/"
+    },{
+        title: "码云",
+        href: "https://gitee.com/flhonker/events"
+    },{
+        title: "Qt",
+        href: "https://www.qt.io/"
+    },{
+        title: "Linux",
+        href: "https://www.linux.org/"
+    }
+]
+
+theme: jekyll-theme-merlot
