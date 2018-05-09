@@ -16,4 +16,4 @@ git push origin master
 # 切换回原来目录
 cd $currentDir
 echo ""
-echo -e -n “\033[42;31m Frank Blog update online! \033[5m”
+echo “Frank Blog update online!”
