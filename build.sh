@@ -17,3 +17,4 @@ git push origin master
 cd $currentDir
 echo ""
 echo -e "\033[42;37m Frank Blog update online! \033[5m"
+echo ""
