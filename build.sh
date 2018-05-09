@@ -5,7 +5,7 @@ echo "Start to publish..."
 # 切换到FLHonker.github.io目录
 cd /home/frank/Study/FLHonker.github.io/
 # bundle更新与生成
-if ["$2" == "-u"]; then
+if [ "$2" == "-u" ]; then
     bundle update
 fi
 bundle exec jekyll build
