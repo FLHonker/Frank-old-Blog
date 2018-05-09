@@ -15,4 +15,5 @@ git commit -m ""$1""
 git push origin master
 # 切换回原来目录
 cd $currentDir
-echo "Frank Blog update online!"
+echo ""
+echo -e “\033[42;37m Frank Blog update online! \033[5m”
