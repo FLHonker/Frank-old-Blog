@@ -62,8 +62,8 @@ disqus_username: FLHonker
 # Gitalk
 gitalk:
   enable: true    #是否开启Gitalk评论
-  clientID: 52a84d1753eddc018509                            #生成的clientID
-  clientSecret: d981f4470947f2a5bc1a4b9bf2cbdcfaa17b70a9    #生成的clientSecret
+  clientID: 3fd99430277963531643                            #生成的clientID
+  clientSecret: 71fdddd7d9878e0c5211a665cb952991b9633a8e    #生成的clientSecret
   repo: flhonker.github.io    #仓库名称
   owner: FLHonker    #github用户名
   admin: FLHonker
@@ -82,11 +82,9 @@ gitalk:
 
 
 
-
-
 # Featured Tags
 featured-tags: true                     # 是否使用首页标签
-featured-condition-size: 1              # 相同标签数量大于这个数，才会出现在首页
+featured-condition-size: 2              # 相同标签数量大于这个数，才会出现在首页
 
 
 
