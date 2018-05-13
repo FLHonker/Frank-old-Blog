@@ -1,4 +1,5 @@
 #!/bin/bash
+# 一键部署github-pages，包括更新bundle依赖、运行jekyll服务、git提交与push。
 # 保存当前目录
 currentDir=$PWD
 echo "Start to publish..."
