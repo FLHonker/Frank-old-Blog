@@ -82,12 +82,12 @@ $ cd bochs-2.6.9/my_conf
 $ vim bochsrc.disk
 
 // 配置如下
-＃首先设置 Bochs 在运行过程中能够使用的内存，本例为 32MB。
-＃关键字为 megs
-megs 32
+#首先设置 Bochs 在运行过程中能够使用的内存，本例为 32MB。
+#关键字为 megs
+megs: 32
 
-＃设置对应真实机器的 BIOS 和 VGA BIOS 。
-＃对应两个关键字为 ： romimage 和 vgaromimage
+#设置对应真实机器的 BIOS 和 VGA BIOS 。
+#对应两个关键字为 ： romimage 和 vgaromimage
 romimage: file＝/home/frank/Developer/bochs-2.6.9/share/bochs/BIOS-bochs-latest
 vgaromimage: file＝/home/frank/Developer/bochs-2.6.9/share/bochs/VGABIOS-lgpl-latest
 
@@ -129,20 +129,23 @@ ata0: enabled=1,ioaddr1=0x1f0, ioaddr2=0x3f0, irq=14
 
 完整的配置如下:
 ```bash
-＃首先设置 Bochs 在运行过程中能够使用的内存，本例为 32MB。
-＃关键字为 megs
-megs 32
+###############################################################
+# Configuration file for Bochs -- use harddisk
+###############################################################
+# 首先设置 Bochs 在运行过程中能够使用的内存，本例为 32MB。
+# 关键字为 megs
+megs: 32
 
-＃设置对应真实机器的 BIOS 和 VGA BIOS 。
-＃对应两个关键字为 ： romimage 和 vgaromimage
-romimage: file＝/home/frank/Developer/bochs-2.6.9/share/bochs/BIOS-bochs-latest
-vgaromimage: file＝/home/frank/Developer/bochs-2.6.9/share/bochs/VGABIOS-lgpl-latest
+# 设置对应真实机器的 BIOS 和 VGA BIOS 。
+# 对应两个关键字为: romimage 和 vgaromimage
+romimage: file=/home/frank/Developer/bochs-2.6.9/share/bochs/BIOS-bochs-latest
+vgaromimage: file=/home/frank/Developer/bochs-2.6.9/share/bochs/VGABIOS-lgpl-latest
 
-#选择启动盘符
+# 选择启动盘符
 boot: disk  #从硬盘启动
 
 # 设置日志文件的输入位置
-log: bochs.out
+log: bochslog.txt
 
 # 关闭鼠标，打开键盘
 mouse: enabled=0
@@ -172,6 +175,16 @@ $ source .bashrc
 
 ![](https://res.cloudinary.com/flhonker/image/upload/v1526436936/githubio/linux-service/bochs/parameter-exit.png)
 
-这样其实说明一切都准备好了，属于正常现象，如果不是这样，可能您需要回头再看看自己是不是哪里配置出现了问题。
+这样其实说明一切都准备好了，属于正常现象，如果不是这样，可能您需要回头再看看自己是不是哪里配置出现了问题。真的是这样吗？不是的，没看见上图第二行提示错误吗？
+经过我一晚上的折腾，终于发现了配置文件bochsrc.disk的内容有错误！有几行注释的"#“使用的是中文全角的"＃”，所以造成解析错误。同学们一定要注意！
+修正配置文件后，接下来还原正常配置过程：
+![bochs-start-ok](https://res.cloudinary.com/flhonker/image/upload/v1526490072/githubio/linux-service/bochs/bochs-conf-ok.png)
+这里默认选[6]进入模拟器。然后输入：`<bochs:1> c`进入模拟器界面。
+
+![nodev](https://res.cloudinary.com/flhonker/image/upload/v1526490065/githubio/linux-service/bochs/conf-ok-nobootdev.png)
+到这里才一切正常。
+接下我们退出吧：
+
+![exit-bochs](https://res.cloudinary.com/flhonker/image/upload/v1526490068/githubio/linux-service/bochs/bochs-exit.png)
 
 出现这用错误的原因是因为我们现在的硬盘还只是一个空的硬盘，没有任何数据，又如何能够运行呢，从图上可以看到，CPU一下就跑没影了。在我们平时开机的时候，是不是都要通过BIOS引导，进行硬件，内存的各项检测之后，再将我们的操作系统从硬盘上唤醒。此时操作系统才接管了我们的电脑。我们的配置讲完了，关于主引导的编写可能要等我研究透了之后再和大家分享啦。
