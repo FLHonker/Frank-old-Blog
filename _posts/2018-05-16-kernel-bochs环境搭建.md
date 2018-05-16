@@ -4,7 +4,7 @@ title:      bochs环境搭建
 subtitle:   学习Linux内核？先搭建一个bochs简易环境
 date:       2018-05-16
 author:     Frank Liu
-header-img: img/post-bg-linux (2).jpg
+header-img: img/post-bg-cpu.jpg
 catalog: true
 tags:
     - Linux
