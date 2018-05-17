@@ -176,3 +176,89 @@ dd是Linux下用于磁盘操作的命令，在Linux下man dd即可查看。
 
 ![显存布局](https://res.cloudinary.com/flhonker/image/upload/v1526549465/githubio/linux-service/bochs/gpu-mm.png)
 我们使用文本模式，就要从0xB8000开始写入。我们往这块内存里输入的字符会直接落入显存，也就可以显示在屏幕上面了。
+```asm
+;主引导程序---直接操作显存显示“Hello MBR”
+;mbr.S 调用BIOS 10H号中断
+;显示Frank MBR
+;---------------------
+
+;vstart作用是告诉编译器，把我的起始地址编为0x7c00
+SECTION MBR vstart=0x7c00 ;程序开始的地址
+    mov ax, cs            ;使用cs初始化其他的寄存器
+    mov ds, ax            ;因为是通过jmp 0:0x7c00到的MBR开始地址
+    mov ss, ax            ;所以此时的cs为0,也就是用0初始化其他寄存器
+    mov fs, ax			  ;此类的寄存器不同通过立即数赋值，采用ax中转
+    mov sp, 0x7c00  	  ;初始化栈指针
+    mov ax, 0xb800			;显存地址，中转入ax
+    mov es, ax				;显存地址存入附加堆栈段es
+
+;清屏利用0x10中断的0x6号功能
+;清屏(向上滚动窗口)
+;AH=06H,AL=上滚行数(0表示全部)
+;BH=上卷行属性
+;(CL,CH)=窗口左上角坐标，(DL,DH)=窗口右下角
+;------------------------
+    mov ax, 0x600
+    mov bx, 0x700
+    mov cx, 0			;左上角(0,0)
+    mov dx, 0x184f		;右下角(79,24),
+                     	;VGA文本模式中一行80个字符，共25行
+
+    int 0x10
+
+;直接从(0,0)写入每个字符和对应色彩
+;写入显存
+;------------------------------
+	mov byte[es: 0x00], 'H'
+	mov byte[es: 0x01], 0xEE   ;黄色前景棕色背景+闪烁
+
+	mov byte[es: 0x02], 'e'
+	mov byte[es: 0x03], 0x33
+
+	mov byte[es: 0x04], 'l'
+	mov byte[es: 0x05], 0xDD
+
+	mov byte[es: 0x06], 'l'
+	mov byte[es: 0x07], 0x02
+
+	mov byte[es: 0x08], 'o'
+	mov byte[es: 0x09], 0xA2
+
+	mov byte[es: 0x0A], ' '
+	mov byte[es: 0x0B], 0x39
+
+	mov byte[es: 0x0C], 'M'
+	mov byte[es: 0x0D], 0x88
+
+	mov byte[es: 0x0E], 'B'
+	mov byte[es: 0x0F], 0x0C
+
+	mov byte[es: 0x10], 'R'
+	mov byte[es: 0x11], 0x1F
+
+;------------------------------
+    jmp $
+    times 510-($-$$) db 0	;$表示当前指令的地址，$$表示程序的起始地址(也就是最开始的7c00)，
+    ;所以$-$$就等于本条指令之前的所有字节数。
+    ;510-($-$$)的效果就是，填充了这些0之后，从程序开始到最后一个0，一共是510个字节。
+    db 0x55, 0xaa			;再加2个字节，刚好512B，占满一个扇区
+```
+将以上MBR的汇编代码汇编生成二进制文件，写入硬盘文件。注意，你可以直接在原硬盘文件`hd60M.img`上进行操作而无需进行任何重置工作或重新创建一个硬盘，因为我们使用的`dd`命令操作是可以直接覆盖写入硬盘开始的第一个512B的扇区，将原来的MBR覆盖。即之前刷入的MBR不会影响本次操作。
+运行bochs，可以看见一下效果：
+
+![HelloMBR](https://res.cloudinary.com/flhonker/image/upload/v1526566642/githubio/linux-service/bochs/helloMBR.gif)
+
+## MBR进阶，使用硬盘
+
+我们的MBR当然不止是在屏幕上显示“Hello MBR”就完事了，前面提到过MBR要从硬盘上把Loader加载到内存并且运行，并把接力棒交给它。
+
+也许你会有如下疑问：
+
+为什么要把loader加载入内存？
+
+首先我们要知道MBR和操作系统都是位于硬盘上的。CPU的硬件电路被设计为只能运行处于内存中的程序，因为CPU运行内存中程序更快。所以CPU要从硬盘读取数据，决定把它加载到内存的什么位置。
+
+### 怎样控制硬盘
+CPU只能同IO接口进行交流，那么CPU要和硬盘交流的话，也一定要通过IO接口，硬盘的IO接口就是硬盘控制器。再具体一点，就是硬盘控制器与CPU之间通信是通过端口。所谓端口，其实就是一些位于IO接口中的寄存器。不同的端口有着不同的作用。
+
+![硬盘控制器主要端口寄存器](https://res.cloudinary.com/flhonker/image/upload/v1526567481/githubio/linux-service/bochs/harddisk-register.png)
