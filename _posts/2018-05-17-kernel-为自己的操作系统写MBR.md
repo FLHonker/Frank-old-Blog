@@ -34,6 +34,7 @@ BIOS的最后一项工作就是校验启动盘中位于0盘0道1扇区的内容�
 
 所以MBR的使命，就是从硬盘把Loader加载到内存，就可以把接力棒交给Loader了。Loader的实现我们先不讲。不过还得多说一句，现在我们还在实模式下晃悠。
 
+---
 ## 实模式的内存布局
 
 我们已经在前面提过了实模式，那么实模式到底是什么，和保护模式又有什么区别？
@@ -55,6 +56,7 @@ BIOS的最后一项工作就是校验启动盘中位于0盘0道1扇区的内容�
 
 将接力棒交由MBR来加载我们的内核，我们初步的工作就是编写MBR。在进行内核加载之前，我们先通过MBR打印一些字符，来验证我们之前所说是否正确。
 
+---
 ## 编写MBR，初见显存
 
 BIOS要检测到MBR的最后两个字节为0x55和0xaa，然后才会开始执行MBR中的代码。
@@ -168,6 +170,7 @@ dd是Linux下用于磁盘操作的命令，在Linux下man dd即可查看。
 ![frankmbr-ok](https://res.cloudinary.com/flhonker/image/upload/v1526490066/githubio/linux-service/bochs/FrankMBR.png)
 看见了吧？黑底绿字。
 
+---
 ## 直接写入显存
 
 无论是哪种显示器，都是由显卡控制的。而无论哪种显卡，都提供了IO端口和显存。显存是位于显卡内部的一块内存。
@@ -248,6 +251,7 @@ SECTION MBR vstart=0x7c00 ;程序开始的地址
 
 ![HelloMBR](https://res.cloudinary.com/flhonker/image/upload/v1526566642/githubio/linux-service/bochs/helloMBR.gif)
 
+---
 ## MBR进阶，使用硬盘
 
 我们的MBR当然不止是在屏幕上显示“Hello MBR”就完事了，前面提到过MBR要从硬盘上把Loader加载到内存并且运行，并把接力棒交给它。
@@ -259,6 +263,244 @@ SECTION MBR vstart=0x7c00 ;程序开始的地址
 首先我们要知道MBR和操作系统都是位于硬盘上的。CPU的硬件电路被设计为只能运行处于内存中的程序，因为CPU运行内存中程序更快。所以CPU要从硬盘读取数据，决定把它加载到内存的什么位置。
 
 ### 怎样控制硬盘
+
 CPU只能同IO接口进行交流，那么CPU要和硬盘交流的话，也一定要通过IO接口，硬盘的IO接口就是硬盘控制器。再具体一点，就是硬盘控制器与CPU之间通信是通过端口。所谓端口，其实就是一些位于IO接口中的寄存器。不同的端口有着不同的作用。
 
 ![硬盘控制器主要端口寄存器](https://res.cloudinary.com/flhonker/image/upload/v1526567481/githubio/linux-service/bochs/harddisk-register.png)
+可以看到，端口分成了两组，我们重点看Command Block registers。
+
+data寄存器的作用是读取或写入数据，16位(其他寄存器都是8位)。在读硬盘时，硬盘准备好数据后，硬盘控制器将其放在内部的缓冲区中，不断读此寄存器就是在读出缓冲区中的数据。写硬盘时，我们把数据送到此端口，数据就被存入缓冲区，硬盘控制器发现这个缓冲区中有数据了，就把这些数据写入相应扇区。
+
+读硬盘时，端口0x171或0x1F1寄存器叫Error寄存器。只有在读取失败时有用，里面会记录失败信息，尚未读取的硬盘数在Sector count寄存器中。写硬盘时，这个寄存器叫Feature寄存器。用来记录一些参数。
+
+Sector count寄存器用来指定待读取或待写入的扇区数。硬盘每完成一个扇区，就会把此寄存器值减1，如果中间失败了，那这个寄存器的值就是未完成的扇区数。如果它被指定为0，表示要操作256个扇区。
+
+LBA寄存器涉及到`LBA方法`。
+
+从硬盘读写数据，最经典的就是像硬盘控制器分别发送柱面号，磁头号，扇区号，就是我们前面说过的`CHS模式`。但是如果把<u>扇区统一编址</u>，把他们看做逻辑扇区，全都是从0开始编号，这样就能节省很多麻烦，这就是LBA方法。
+
+最早的逻辑扇区编址方法是`LBA28`，用28个比特表示逻辑扇区号。则LBA28可以管理128GB的硬盘。随着硬盘技术的发展，`LBA48`已经出现，可管理容量达到131072TB。
+
+但是我们为了方便，在这里使用LBA28模式。
+
+LBA寄存器有low、mid、high 三个，都是8位。但是这三个也只能表示24位，剩下4位被放在device寄存器的低4位。
+
+所以我们可以看出device寄存器是个“杂项寄存器”。它的第4位用来指定通道上的主盘(o)或从盘(1)，第6位用来设置是LBA(1)方式还是CHS(0)方式，第5和7位固定为1。
+
+读硬盘时，端口号为0x1F7或0x177的寄存器是Status，用来给出硬盘状态信息。第0位是ERR位，若此位为1，表示命令出错。第3位是data request位，若为1，表示硬盘已经准备好数据，主机可以把数据读出来了，第7位是BSY位，为1表示硬盘正在忙着，此寄存器中其他位都无效。写硬盘时，它是Command寄存器，把命令写进此寄存器，硬盘就可以开始工作了。
+* 读扇区：0x20
+* 写扇区：0x30
+
+**操作步骤如下：**
+
+1. 先选择通道，往该通道的sector count寄存器写入待操作的扇区数；
+2. 往该通道上的三个LBA寄存器写入扇区起始地址的低24位；
+3. 往device寄存器中写入LBA地址的24~27位，并置第6位为1，使其为LBA模式，设置第4位，选择操作的硬盘(master硬盘或slave硬盘)；
+4. 往该通道上的command寄存器写入操作命令；
+5. 读取该通道上的status寄存器，判断硬盘工作是否完成；
+6. 如果以上步骤是读硬盘，则进入下一个步骤，否则，结束；
+7. 将硬盘数据读出。
+
+---
+## 改造MBR，操作硬盘
+
+我们的MBR现在在第0扇区(LBA方式)，那么不如将Loader放在第2扇区，中隔一个扇区安全一些。MBR把loader读出来后，可以选择实模式下1MB的空闲内存存放。回顾实模式内存布局图，看到0x500-0x7BFF可用，0x7E00-0x9FBFF可用。因为内核地址增长是从低到高的，所以我们尽量选低地址加载Loader，因此选择0x900。
+```asm
+;主引导程序 --- 改造MBR，引导读取硬盘
+;mbr3_Loader.S
+
+;---------------------
+LOADER_BASE_ADDR	 equ 0x900
+LOADER_START_SECTION equ 0x2
+
+;vstart作用是告诉编译器，把我的起始地址编为0x7c00
+SECTION MBR vstart=0x7c00 ;程序开始的地址
+    mov ax, cs            ;使用cs初始化其他的寄存器
+    mov ds, ax            ;因为是通过jmp 0:0x7c00到的MBR开始地址
+    mov ss, ax            ;所以此时的cs为0,也就是用0初始化其他寄存器
+    mov fs, ax			  ;此类的寄存器不同通过立即数赋值，采用ax中转
+    mov sp, 0x7c00  	  ;初始化栈指针
+    mov ax, 0xb800			;显存地址，中转入ax
+    mov es, ax				;显存地址存入附加堆栈段es
+
+;---------------------------
+; 显示“Frank MBR”
+;清屏利用0x10中断的0x6号功能
+;清屏(向上滚动窗口)
+;AH=06H,AL=上滚行数(0表示全部)
+;BH=上卷行属性
+;(CL,CH)=窗口左上角坐标，(DL,DH)=窗口右下角
+;---------------------------
+    mov ax, 0x600
+    mov bx, 0x700
+    mov cx, 0			;左上角(0,0)
+    mov dx, 0x184f		;右下角(79,24),
+                     	;VGA文本模式中一行80个字符，共25行
+
+    int 0x10
+
+;直接从(0,0)写入每个字符和对应色彩
+;------------------------------
+	mov byte[es: 0x00], 'F'
+	mov byte[es: 0x01], 0xEE   ;黄色前景棕色背景+闪烁
+
+	mov byte[es: 0x02], 'r'
+	mov byte[es: 0x03], 0xEE
+
+	mov byte[es: 0x04], 'a'
+	mov byte[es: 0x05], 0xEE
+
+	mov byte[es: 0x06], 'n'
+	mov byte[es: 0x07], 0xEE
+
+	mov byte[es: 0x08], 'k'
+	mov byte[es: 0x09], 0xEE
+
+	mov byte[es: 0x0A], '-'
+	mov byte[es: 0x0B], 0xEE
+
+	mov byte[es: 0x0C], 'M'
+	mov byte[es: 0x0D], 0xEE
+
+	mov byte[es: 0x0E], 'B'
+	mov byte[es: 0x0F], 0xEE
+
+	mov byte[es: 0x10], 'R'
+	mov byte[es: 0x11], 0xEE
+
+;设置参数，调用函数读取硬盘
+;------------------------------
+	mov eax, LOADER_START_SECTION	;起始扇区LBA地址
+	mov bx, LOADER_BASE_ADDR		;写入的地址
+	mov cx, 1						;待读入的扇区数
+	call rd_disk_m_16				;调用读取硬盘
+
+	jmp LOADER_BASE_ADDR			;跳转到Loader区
+
+;------------------------
+;读取硬盘n个扇区
+;------------------------
+rd_disk_m_16:
+;step1:设置读取扇区数
+	mov esi, eax					;eax=LBA起始扇区号,备份eax
+									;bx=数据写入的内存地址
+	mov di, cx						;cx=读入的扇区数,1；备份cx
+	mov dx, 0x1F2					;使用0x1F2端口,Sector count
+	mov al, cl						;访问8位端口时使用寄存器AL
+	out dx, al						;将AL中的数据写入端口号为0x1F2的寄存器中
+									;out的操作数可以位8位立即数或寄存器DX，源操作数必须为AL或AX
+	mov eax, esi
+
+;step2:将LBA地址写入0x1F3-0x1F6(在这里我们地址为2)
+	;0x1F3放0-7位
+	mov dx, 0x1F3
+	out dx, al
+
+	;0xF4放8-15位
+	mov cl, 8
+	shr eax, cl			;右移8位,AL置0
+	mov dx, 0x1F4
+	out dx, al
+
+	;0xF5放16-23位
+	shr eax, cl
+	mov dx, 0x1F5
+	out dx, al
+
+	shr eax, cl
+	and al, 0x0F
+	or	al, 0xE0		;设置7-4位为1110,LBA模式,主盘
+	mov dx, 0x1F6
+	out dx, al
+
+;step3:往Command寄存器写入读命令
+	mov dx, 0x1F7
+	mov al, 0x20
+	out dx, al
+
+;step4:检查硬盘状态
+  .not_ready:
+	nop
+	in  al, dx
+	and al, 0x88
+	cmp al, 0x08
+	jnz .not_ready
+
+;step5:从0xF0端口读出数据
+	mov ax, di			;DI为要读取的扇区数,data寄存器为16位,即每次读取2个字节,要读(DI*512/2)次
+	mov dx, 256
+	mul dx				;MUL指令的被乘数隐含在AX中,乘积的低16位在AX中,高16位在DX中
+	mov cx, ax			;把AX的的值赋给CX,用作计数器
+
+	mov dx, 0x1F0
+  .go_on_read:
+	in  ax, dx			;把0x1F0端口读出的数据放在AX寄存器中
+	mov [bx], ax		;再把AX寄存器中的数据放在偏移地址为BX指向的内存空间
+	add bx, 2			;一次读2个字节
+	loop .go_on_read
+	ret					;记得调用函数后要返回
+
+;------------------------------
+    times 510-($-$$) db 0
+    db 0x55, 0xaa
+```
+然后在你自己的文件目录下依次执行：
+> nasm -o mbr_disk.bin mbr_disk.S
+> dd if=mbr3_Loader.bin of=/home/frank/Developer/bochs-2.6.9/bin/hd60M.img bs=512 count=1 conv=notrunc
+
+我们现在的loader还什么都没干了，那干脆就让它显示“Loader...”好了。
+```asm
+;Loader_!.S, 暂时什么有用工作也不做，只显示“Loader...”
+;-----------------------------------
+LOADER_BASE_ADDR 	equ 0x900
+LOADER_START_SECTOR equ 0x2
+
+SECTION LOADER vstart=LOADER_BASE_ADDR
+	mov byte[es: 0x00], 'L'
+	mov byte[es: 0x01], 0xEE   ;黄色前景棕色背景+闪烁
+
+	mov byte[es: 0x02], 'o'
+	mov byte[es: 0x03], 0xEE
+
+	mov byte[es: 0x04], 'a'
+	mov byte[es: 0x05], 0xEE
+
+	mov byte[es: 0x06], 'd'
+	mov byte[es: 0x07], 0xEE
+
+	mov byte[es: 0x08], 'e'
+	mov byte[es: 0x09], 0xEE
+
+	mov byte[es: 0x0A], 'r'
+	mov byte[es: 0x0B], 0xEE
+
+	mov byte[es: 0x0C], '.'
+	mov byte[es: 0x0D], 0xEE
+
+	mov byte[es: 0x0E], '.'
+	mov byte[es: 0x0F], 0xEE
+
+	mov byte[es: 0x10], '.'
+	mov byte[es: 0x11], 0xEE
+
+	jmp $
+```
+依次执行：
+
+> nasm -o loader.bin loader.S
+> dd if=Loader_1.bin of=/home/frank/Developer/bochs-2.6.9/bin/hd60M.img bs=512 count=1 seek=2 conv=notrunc
+
+<i>一定要注意这里**seek=2**，意思是跳过2块，因为我们的Loader在2号扇区。缺少seek的话会出错。</i>实验中这一步嫌麻饭的话可以自己写成脚本哈～
+
+最后在bochs目录下执行：
+> ./bochs -f bochsrc.disk
+
+效果如下：
+
+[gif]：
+
+![Loader...](https://res.cloudinary.com/flhonker/image/upload/v1526700197/githubio/linux-service/bochs/Loader.gif)
+
+[vedio]：
+
+<iframe width="560" height="315" src="https://res.cloudinary.com/flhonker/video/upload/v1526699718/githubio/linux-service/bochs/Loader.mp4" frameborder="0" allowfullscreen></iframe>
