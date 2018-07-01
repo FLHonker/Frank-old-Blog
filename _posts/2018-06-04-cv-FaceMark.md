@@ -1,8 +1,21 @@
+---
+layout:     post
+title:      opencv实战：人脸关键点检测（FaceMark）
+subtitle:   利用OpenCV中的LBF算法进行人脸关键点检测（Facial Landmark Detection）
+date:       2018-05-03
+author:     Frank Liu
+header-img: img/post-bg-2015.jpg
+catalog: true
+tags:
+    - Linux
+---
+
+
 # opencv实战：人脸关键点检测（FaceMark）
 
 > Summary：利用OpenCV中的LBF算法进行人脸关键点检测（Facial Landmark Detection）
 > Author：Frank Liu
-> ate： 2018-05-03
+> date： 2018-05-03
 > Note：OpenCV3.4和OpenCV Contrib3.4及上支持Facemark
 
 <font size=5> 教程目录 </font>
@@ -83,7 +96,7 @@ OpenCV官方的人脸关键点检测API称为Facemark。Facemark目前分别基�
 
 根据获得关键点，我们可以在视频帧上绘制出来并显示。
 
-[代码]
+#### 代码
 
 本教程的代码一共有两个程序，分别为**faceLandmarkDetection.cpp**和**drawLandmarks.hpp**。
 
@@ -91,7 +104,175 @@ OpenCV官方的人脸关键点检测API称为Facemark。Facemark目前分别基�
 
 - drawLandmarks.hpp实现人脸关键点绘制和多边形线绘制。
 
+**faceLandmarkDetection.cpp**
+```
+// Summary: 利用OpenCV的LBF算法进行人脸关键点检测
+// Author:  Amusi
+// Date:    2018-03-20
+// Reference:
+//		[1]Tutorial: https://www.learnopencv.com/facemark-facial-landmark-detection-using-opencv/
+//		[2]Code: https://github.com/spmallick/learnopencv/tree/master/FacialLandmarkDetection
+
+// Note: OpenCV3.4以及上支持Facemark
+
+#include <opencv2/opencv.hpp>
+#include <opencv2/face.hpp>
+#include "drawLandmarks.hpp"
+
+
+using namespace std;
+using namespace cv;
+using namespace cv::face;
+
+
+int main(int argc,char** argv)
+{
+    // 加载人脸检测器（Face Detector）
+	// [1]Haar Face Detector
+    //CascadeClassifier faceDetector("haarcascade_frontalface_alt2.xml");
+	// [2]LBP Face Detector
+	CascadeClassifier faceDetector("lbpcascade_frontalface.xml");
+
+    // 创建Facemark类的对象
+    Ptr<Facemark> facemark = FacemarkLBF::create();
+
+    // 加载人脸检测器模型
+    facemark->loadModel("lbfmodel.yaml");
+
+    // 设置网络摄像头用来捕获视频
+    VideoCapture cam(0);
+    
+    // 存储视频帧和灰度图的变量
+    Mat frame, gray;
+    
+    // 读取帧
+    while(cam.read(frame))
+    {
+      
+      // 存储人脸矩形框的容器
+      vector<Rect> faces;
+	  // 将视频帧转换至灰度图, 因为Face Detector的输入是灰度图
+      cvtColor(frame, gray, COLOR_BGR2GRAY);
+
+      // 人脸检测
+      faceDetector.detectMultiScale(gray, faces);
+      
+	  // 人脸关键点的容器
+      vector< vector<Point2f> > landmarks;
+      
+	  // 运行人脸关键点检测器（landmark detector）
+      bool success = facemark->fit(frame,faces,landmarks);
+      
+      if(success)
+      {
+        // 如果成功, 在视频帧上绘制关键点
+        for(int i = 0; i < landmarks.size(); i++)
+        {
+			// 自定义绘制人脸特征点函数, 可绘制人脸特征点形状/轮廓
+			drawLandmarks(frame, landmarks[i]);
+			// OpenCV自带绘制人脸关键点函数: drawFacemarks
+			drawFacemarks(frame, landmarks[i], Scalar(0, 0, 255));
+        }
+	
+      }
+
+      // 显示结果
+      imshow("Facial Landmark Detection", frame);
+
+      // 如果按下ESC键, 则退出程序
+      if (waitKey(1) == 27) break;
+      
+    }
+    return 0;
+}
+
+```
+
+**drawLandmarks.hpp**
+
+```
+// Summary: 绘制人脸关键点和多边形线
+// Author:  Amusi
+// Date:    2018-03-20
+
+#ifndef _renderFace_H_
+#define _renderFace_H_
+
+#include <iostream>
+#include <opencv2/opencv.hpp>
+
+using namespace cv; 
+using namespace std; 
+
+#define COLOR Scalar(255, 200,0)
+
+// drawPolyline通过连接开始和结束索引之间的连续点来绘制多边形线。
+void drawPolyline
+(
+  Mat &im,
+  const vector<Point2f> &landmarks,
+  const int start,
+  const int end,
+  bool isClosed = false
+)
+{
+    // 收集开始和结束索引之间的所有点
+    vector <Point> points;
+    for (int i = start; i <= end; i++)
+    {
+        points.push_back(cv::Point(landmarks[i].x, landmarks[i].y));
+    }
+
+    // 绘制多边形曲线
+    polylines(im, points, isClosed, COLOR, 2, 16);
+    
+}
+
+// 绘制人脸关键点
+void drawLandmarks(Mat &im, vector<Point2f> &landmarks)
+{
+    // 在脸上绘制68点及轮廓（点的顺序是特定的，有属性的）
+    if (landmarks.size() == 68)
+    {
+      drawPolyline(im, landmarks, 0, 16);           // Jaw line
+      drawPolyline(im, landmarks, 17, 21);          // Left eyebrow
+      drawPolyline(im, landmarks, 22, 26);          // Right eyebrow
+      drawPolyline(im, landmarks, 27, 30);          // Nose bridge
+      drawPolyline(im, landmarks, 30, 35, true);    // Lower nose
+      drawPolyline(im, landmarks, 36, 41, true);    // Left eye
+      drawPolyline(im, landmarks, 42, 47, true);    // Right Eye
+      drawPolyline(im, landmarks, 48, 59, true);    // Outer lip
+      drawPolyline(im, landmarks, 60, 67, true);    // Inner lip
+    }
+    else 
+    { 
+		// 如果人脸关键点数不是68，则我们不知道哪些点对应于哪些面部特征。所以，我们为每个landamrk画一个圆圈。
+		for(int i = 0; i < landmarks.size(); i++)
+		{
+			circle(im,landmarks[i],3, COLOR, FILLED);
+		}
+    }
+    
+}
+
+#endif // _renderFace_H_
+
+```
 
 ## 实验结果
 
 ![检测结果]()
+
+## Reference
+
+[1]Tutorial：<https://www.learnopencv.com/facemark-facial-landmark-detection-using-opencv/>
+
+[2]Code：<https://github.com/spmallick/learnopencv/tree/master/FacialLandmarkDetection>
+
+[3]Models：<https://github.com/kurnianggoro/GSOC2017>
+
+[4]本教程所有文件打包：
+
+链接1（百度云网盘）：https://pan.baidu.com/s/16PZ-McVgRwB3bH1Y2fEWBA  密码：x8be
+
+链接2：<http://anonfile.com/e9caRad3bf/Facemark_LBF.rar>
