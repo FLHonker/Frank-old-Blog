@@ -5,6 +5,10 @@ currentDir=$PWD
 echo "Start to publish..."
 # 切换到FLHonker.github.io目录
 cd /home/frank/Study/FLHonker.github.io/
+if [ -z "$1" ]
+then
+    echo "Usage: $0 message [-u]"
+fi
 # bundle更新与生成
 if [ "$2" == "-u" ]; then
     bundle update

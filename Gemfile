@@ -25,3 +25,6 @@ end
 
 # Github-markdown
 gem 'github-markdown', '~> 0.6.9'
+
+# redcarpet
+gem 'redcarpet', '~> 3.4.0'

@@ -218,6 +218,7 @@ GEM
     rb-fsevent (0.10.3)
     rb-inotify (0.9.10)
       ffi (>= 0.5.0, < 2)
+    redcarpet (3.4.0)
     rouge (2.2.1)
     ruby-enum (0.7.2)
       i18n
@@ -249,6 +250,7 @@ DEPENDENCIES
   github-pages
   jekyll-feed (~> 0.6)
   minima (~> 2.0)
+  redcarpet (~> 3.4.0)
 
 RUBY VERSION
    ruby 2.5.1p57
