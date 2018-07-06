@@ -13,6 +13,8 @@ tags:
 
 # 用Go打造区块链（1）——基础原型
 
+这一系列的文章是由[Ivan Kuznetsov](https://link.zhihu.com/?target=https%3A//jeiwan.cc/)所写，第一篇文章的翻译稿由[李笑来](https://www.zhihu.com/people/xiaolai/activities)在其公众号学习学习再学习首发，本人觉得是一个结合Go语言学习区块链技术的好资料，后面将用自己的语言翻译一遍，从第一篇开始，顺便对Go语言以及区块链有一个初步的认识。
+
 Go语言是由google开发并于2009年发布的一种静态、强类型、编译型、并发型，并具有垃圾回收（GC）功能的编程语言，特别适用于分布式网络系统开发，而区块链（blockchain）本质上是一本在网络上分布存储的账本，这两者具有天然的匹配性，目前火热的Ethereum Project就是用go原生实现的。
 
 ## 1 介绍
