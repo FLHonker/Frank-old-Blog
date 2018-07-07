@@ -1,6 +1,6 @@
 ---
 layout:     post
-title:      用Go打造区块链（1）—— 数据存储及命令行（CLI）
+title:      用Go打造区块链（3）—— 数据存储及命令行（CLI）
 subtitle:   
 date:       2018-07-05
 author:     Frank Liu
@@ -13,7 +13,7 @@ tags:
 
 # 用Go打造区块链（3）——数据存储及命令行（CLI）
 
-这一系列的文章是由[Ivan Kuznetsov](https://link.zhihu.com/?target=https%3A//jeiwan.cc/)所写，第一篇文章的翻译稿由[李笑来](https://www.zhihu.com/people/xiaolai/activities)在其公众号学习学习再学习首发，本人觉得是一个结合Go语言学习区块链技术的好资料，后面将用自己的语言翻译一遍，从第一篇开始，顺便对Go语言以及区块链有一个初步的认识。
+这一系列的文章是由[Ivan Kuznetsov][1]所写，第一篇文章的翻译稿由[李笑来][2]在其公众号学习学习再学习首发，本人觉得是一个结合Go语言学习区块链技术的好资料，后面将用自己的语言翻译一遍，从第一篇开始，顺便对Go语言以及区块链有一个初步的认识。
 
 ## 1 介绍
 
@@ -21,13 +21,13 @@ tags:
 
 本节过后，项目结构为：
 
-![tree][1]
+![tree][3]
 
 ## 2 数据库选择
 
 目前，我们的实现当中并没有数据库；而是在每次运行程序的时候将区块链存储在内存当中，程序结束后所有的数据便消失了。我们无法重复使用一个区块链，也无法与其他人分享。因此后续我们需要将它存储在硬盘当中。
 
-我们需要哪个数据库呢？事实上，任何一个都可以。在[比特币白皮书](https://bitcoin.org/bitcoin.pdf)当中，并没有特别提到需要使用哪一个数据库，这将取决于每个开发者本身。中本聪首发的[比特币内核](https://github.com/bitcoin/bitcoin)且也当前比特币的一个参考实现，采用[google/leveldb](https://github.com/google/leveldb)。这里我们将采用[BoltDB](https://github.com/boltdb/bolt)...
+我们需要哪个数据库呢？事实上，任何一个都可以。在[比特币白皮书][4]当中，并没有特别提到需要使用哪一个数据库，这将取决于每个开发者本身。中本聪首发的[比特币内核][5]且也当前比特币的一个参考实现，采用[google/leveldb][6]。这里我们将采用[BoltDB][7]...
 
 ## 3 BoltDB
 
@@ -38,7 +38,7 @@ tags:
 3. 不需要运行一个服务
 4. 允许用户构建自己需要的数据结构
 
-以下是来自Github上[BoltDB Readme](https://github.com/boltdb/bolt)文件的介绍：
+以下是来自Github上[BoltDB Readme][7]文件的介绍：
 
 > Blot 是一个纯Go的键/值（key/value）存储系统，来自于Howard Chu的LMDB项目。该项目的目的是为那些并不需要像Postgres或者MySQL这样的全功能服务数据库的项目提供一款简单、快速且可靠的数据库。
 正因为 Bolt 注定要用在这样一个队功能要求层次较低的项目上，简单是最关键的。API也很小，也仅仅关注于取值和赋值。就这样小而美。
@@ -46,11 +46,11 @@ tags:
 
 Bolt 是一个key/value数据库，这意味着没有像其它SQL系的关系型数据库管理系统（RDMBS，比如MySQL，PostgreSQL等）的表（table）、行（row）、列（column）等元素。数据以键/值（key/value）的方式进行存储（类似Go语言中的maps数据结构）。key/value对存储在类似于关系型数据库中的表（table）的 buckets 当中，bucket会将相似的数据对进行分组。因此，要想获得value，你需要知道对应的bucket和key。
 
-[BoltDB](https://github.com/boltdb/bolt) 的重要特点是无数据类型：key/value是byte类型的数组（array）。而我们要存储Go语言的结构体数据（特别是Block结构体），因此我们需要将结构体序列化（serialize）。实现一个首先将Go语言的结构体转化成byte数组，然后将byte数组恢复成结构体的机制。我们将采用[encoding/gob](https://golang.org/pkg/encoding/gob/)来完成这一工作，当然，**JSON, XML, Protocol Buffers** 等工具也是可以的，我们之所以采用gob包是因为它足够简单并且是Go语言标准库的一部分。
+[BoltDB][7] 的重要特点是无数据类型：key/value是byte类型的数组（array）。而我们要存储Go语言的结构体数据（特别是Block结构体），因此我们需要将结构体序列化（serialize）。实现一个首先将Go语言的结构体转化成byte数组，然后将byte数组恢复成结构体的机制。我们将采用[encoding/gob][8]来完成这一工作，当然，**JSON, XML, Protocol Buffers** 等工具也是可以的，我们之所以采用gob包是因为它足够简单并且是Go语言标准库的一部分。
 
 ## 4 数据结构
 
-在实现数据持续存储之前，首先需要确定如何在数据库存储数据。就此，我们将参考[比特币内核](https://github.com/bitcoin/bitcoin)的实现方式。
+在实现数据持续存储之前，首先需要确定如何在数据库存储数据。就此，我们将参考[比特币内核][5]的实现方式。
 
 简单地讲，比特币内核用了两个“Buckets”来存储数据：
 
@@ -73,7 +73,7 @@ Bolt 是一个key/value数据库，这意味着没有像其它SQL系的关系型
 1. 'c' + 32-byte transaction hash -> unspent transaction output record for that transaction
 2. 'B' -> 32-byte block hash: the block hash up to which the database represents the unspent transaction outputs
 
-（关于以上数据的详细解释可以访问这个链接[Bitcoin Core 0.11 (ch 2): Data Storage](https://en.bitcoin.it/wiki/Bitcoin_Core_0.11_%28ch_2%29%3A_Data_Storage)）
+（关于以上数据的详细解释可以访问这个链接[Bitcoin Core 0.11 (ch 2): Data Storage][9]）
 
 因为目前我们还没有交易记录，我们的数据库当中仅有 blocks 这个bucket。并且，正如前面所提到的，我们将全部的数据库存储在一个文件当中，并不将单个区块存储在单个文件当中。因此，我们也没有什么信息是与文件数（file number）有个的，所能够利用的 key -> value 数据对如下：
 
@@ -471,11 +471,31 @@ PoW: true
 
 ## 10 链接（Links）
 
-1. [Full source codes][2]
-2. [Bitcoin Core Data Sorage][3]
-3. [boltdb][4]
-4. [encoding/gob][5]
+1. [Full source codes][10]
+2. [Bitcoin Core Data Sorage][9]
+3. [boltdb][7]
+4. [encoding/gob][8]
 
 
-[1]:https://res.cloudinary.com/flhonker/image/upload/v1530941971/githubio/go/goBlockChain/blockchain_part3-tree.png
-[2]:https://github.com/Jeiwan/blockchain_go/tree/part_3
+
+
+[1]:https://link.zhihu.com/?target=https%3A//jeiwan.cc/	"Ivan Kuznetsov"
+
+[2]:https://www.zhihu.com/people/xiaolai/activities	"李笑来"
+
+[3]:https://res.cloudinary.com/flhonker/image/upload/v1530941971/githubio/go/goBlockChain/blockchain_part3-tree.png	"dir tree"
+
+[4]:https://bitcoin.org/bitcoin.pdf	"比特币白皮书"
+
+[5]:https://github.com/bitcoin/bitcoin	"比特币内核"
+
+[6]:https://github.com/google/leveldb	"google/leveldb"
+
+[7]:https://github.com/boltdb/bolt	"BoltDB & README"
+
+[8]:https://golang.org/pkg/encoding/gob/	"encoding/gob"
+
+[9]:https://en.bitcoin.it/wiki/Bitcoin_Core_0.11_%28ch_2%29%3A_Data_Storage	   "Bitcoin Core 0.11 (ch 2): Data Storage"
+
+[10]:https://github.com/Jeiwan/blockchain_go/tree/part_3	"Full source codes"
+

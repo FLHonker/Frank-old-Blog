@@ -13,7 +13,7 @@ tags:
 
 # 用Go打造区块链（1）——基础原型
 
-这一系列的文章是由[Ivan Kuznetsov](https://link.zhihu.com/?target=https%3A//jeiwan.cc/)所写，第一篇文章的翻译稿由[李笑来](https://www.zhihu.com/people/xiaolai/activities)在其公众号学习学习再学习首发，本人觉得是一个结合Go语言学习区块链技术的好资料，后面将用自己的语言翻译一遍，从第一篇开始，顺便对Go语言以及区块链有一个初步的认识。
+这一系列的文章是由[Ivan Kuznetsov][1]所写，第一篇文章的翻译稿由[李笑来][2]在其公众号学习学习再学习首发，本人觉得是一个结合Go语言学习区块链技术的好资料，后面将用自己的语言翻译一遍，从第一篇开始，顺便对Go语言以及区块链有一个初步的认识。
 
 Go语言是由google开发并于2009年发布的一种静态、强类型、编译型、并发型，并具有垃圾回收（GC）功能的编程语言，特别适用于分布式网络系统开发，而区块链（blockchain）本质上是一本在网络上分布存储的账本，这两者具有天然的匹配性，目前火热的Ethereum Project就是用go原生实现的。
 
@@ -24,7 +24,7 @@ Go语言是由google开发并于2009年发布的一种静态、强类型、编�
 在这一系列的文章当中，我们将基于区块链的简单实现构建一个简化版的加密货币。
 
 在本节中，项目目录结构为：
-![](https://res.cloudinary.com/flhonker/image/upload/v1530879206/githubio/go/goBlockChain/blockchain_part1-tree.png)
+![tree][3]
 
 ## 2 区块（Block）
 
@@ -147,6 +147,18 @@ Hash: 0d1b9743272d8a36e1a6a9944d2093242f51691d3926f6ef11b4e3efcc876cd6
 
 ## 5 链接
 
-1. Full source codes: <https://github.com/Jeiwan/blockchain_go/tree/part_1>
+1. [Full source codes][4]
 
-2. Block hashing algorithm: <https://en.bitcoin.it/wiki/Block_hashing_algorithm>
+2. [Block hashing algorithm][5]
+
+
+
+[1]:https://link.zhihu.com/?target=https%3A//jeiwan.cc/
+
+[2]:https://www.zhihu.com/people/xiaolai/activities
+
+[3]:https://res.cloudinary.com/flhonker/image/upload/v1530879206/githubio/go/goBlockChain/blockchain_part1-tree.png  "terr img"
+
+[4]:https://github.com/Jeiwan/blockchain_go/tree/part_1	"Full source codes"
+
+[5]:https://en.bitcoin.it/wiki/Block_hashing_algorithm	"Block hashing algorithm"
