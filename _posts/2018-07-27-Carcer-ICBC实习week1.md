@@ -13,7 +13,11 @@ tags:
 
 # ICBC广州研发部实习第一周经历
 
-![ICBC研发中心外景][1]
+<center>
+<img src="https://res.cloudinary.com/flhonker/image/upload/v1532694651/githubio/icbc/mmexport1531036987079.jpg
+" width="60%" height="60%" />
+ICBC研发中心外景
+</center>
 
 ![ICBC前台][2]
 
@@ -92,7 +96,7 @@ ok，问题解决了，[去边框的问题][10]请看下回分解，谢谢！
 
 [6]:https://res.cloudinary.com/flhonker/image/upload/v1532694649/githubio/icbc/mmexport1531053291407.jpg
 
-[7]：https://res.cloudinary.com/flhonker/image/upload/v1532694654/githubio/icbc/IMG_20180723_122323.jpg
+[7]:https://res.cloudinary.com/flhonker/image/upload/v1532694654/githubio/icbc/IMG_20180723_122323.jpg
 
 [8]:https://res.cloudinary.com/flhonker/image/upload/v1532694656/githubio/icbc/IMG_20180725_181138.jpg
 
