@@ -65,6 +65,11 @@ Single options:
 
 这个我就不多介绍了吧，我们的老朋友了。Frank目前就是专门研究opencv的，最近推出的很多都是opencv的文章。在本项目中，opencv可是作为特邀嘉宾，负责所有的图像处理。相对于其他图像处理库或者使用Java内置类库自己写的图像处理模块，opencv兼具高性能与简洁的特性。为此，opencv是我强烈推荐使用的，也是由我引入本项目中的，在后面的算法介绍中opencv将闪亮登场并贯穿始终。新来的朋友，可以去[opencv官网][7]或者[github][8]了解一下opencv。
 
+至于，如何在Eclipse或InteliJ IDEA中配置opencv3.x，给大家推荐两篇博客：
+
+1. [简单eclipse配置opencv的方法][9]
+2. [在IntelliJ IDEA 13中配置OpenCV的Java开发环境][10]
+
 ## 该项目中的几项关键技术
 
 关于如何使用Sikuli二次开发并不在我们小组负责的范围内，只是了解了它在我们整个项目中的作用；我们4人的团队只负责基于tesseract开发OCR功能和文本搜索定位。关于Tess4J在InteliJ IDEA、Eclipse中的配置和使用这里也不做过多介绍，大家可以去Google，不过是些工具的使用问题而已。关于[使用Tesseract训练自己的字库教程][5]我也告诉了你们链接。训练过程十分繁琐和无聊，“有多少智能，就得付出多少人工”。
@@ -91,3 +96,5 @@ Single options:
 [6]:http://tess4j.sourceforge.net/
 [7]:https://opencv.org/
 [8]:https://github.com/opencv
+[9]:https://www.cnblogs.com/lyx2018/p/7071241.html
+[10]:https://www.cnblogs.com/yezhang/p/4006134.html
