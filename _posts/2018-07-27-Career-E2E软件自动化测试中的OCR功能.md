@@ -75,6 +75,11 @@ Single options:
 关于如何使用Sikuli二次开发并不在我们小组负责的范围内，只是了解了它在我们整个项目中的作用；我们4人的团队只负责基于tesseract开发OCR功能和文本搜索定位。关于Tess4J在InteliJ IDEA、Eclipse中的配置和使用这里也不做过多介绍，大家可以去Google，不过是些工具的使用问题而已。关于[使用Tesseract训练自己的字库教程][5]我也告诉了你们链接。训练过程十分繁琐和无聊，“有多少智能，就得付出多少人工”。
 
 以上，简单介绍了我们整个项目中使用的工具和目的。接下来，前方高能！
+这是我们OCR模块和文本搜索定位模块的流程图：
+
+<div div align=center>
+<img src="https://res.cloudinary.com/flhonker/image/upload/v1533987824/githubio/icbc/ocr-process.jpg" width = "320" height = "640"/>
+</div>
 
 限于篇幅问题，我们对关键技术详细的设计算法在后续文章中分章节介绍。
 
@@ -98,3 +103,4 @@ Single options:
 [8]:https://github.com/opencv
 [9]:https://www.cnblogs.com/lyx2018/p/7071241.html
 [10]:https://www.cnblogs.com/yezhang/p/4006134.html
+[11]:https://res.cloudinary.com/flhonker/image/upload/v1533987824/githubio/icbc/ocr-process.jpg
